@@ -89,6 +89,28 @@ Streamlit is not installed. Install it with:
 pip install "rl-run-doctor[dashboard]"
 ```
 
+## Using as a Codex Skill
+
+This repository includes a repo-scoped Codex skill at `.agents/skills/rl-run-doctor/SKILL.md`. Codex can use it when working inside this repository to diagnose RL training logs with the `rl-doctor` CLI.
+
+To use the skill across other projects, copy `.agents/skills/rl-run-doctor` to your user-level skills folder:
+
+- Windows: `%USERPROFILE%\.agents\skills\rl-run-doctor`
+- macOS/Linux: `$HOME/.agents/skills/rl-run-doctor`
+
+Verify the CLI before using the skill:
+
+```bash
+rl-doctor --version
+```
+
+Example Codex prompts:
+
+```text
+Use the rl-run-doctor skill to analyze logs/PPO_1/monitor.csv and summarize the generated report.
+Use the rl-run-doctor skill to compare logs/run_a/monitor.csv and logs/run_b/monitor.csv.
+```
+
 ## Supported Logs
 
 - CSV files
