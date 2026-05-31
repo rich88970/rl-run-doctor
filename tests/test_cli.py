@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from rl_run_doctor import __version__
 from rl_run_doctor.cli import main
 
 
@@ -40,6 +41,14 @@ def test_compare_command_creates_required_outputs(tmp_path: Path) -> None:
     assert (output / "report.md").is_file()
     assert (output / "report.html").is_file()
     assert (output / "compare_reward.png").is_file()
+    report = (output / "report.md").read_text(encoding="utf-8")
+    assert "## Comparison Summary" in report
+    assert "Final reward" in report
+    assert "Mean reward" in report
+    assert "Best reward" in report
+    assert "Reward std" in report
+    assert "`sample_train.csv`" in report
+    assert "`sample_eval.csv`" in report
 
 
 def test_cli_help_exits_successfully(capsys: pytest.CaptureFixture[str]) -> None:
@@ -48,6 +57,14 @@ def test_cli_help_exits_successfully(capsys: pytest.CaptureFixture[str]) -> None
 
     assert exc_info.value.code == 0
     assert "rl-doctor" in capsys.readouterr().out
+
+
+def test_cli_version_exits_successfully(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        main(["--version"])
+
+    assert exc_info.value.code == 0
+    assert f"rl-doctor {__version__}" in capsys.readouterr().out
 
 
 def test_cli_returns_nonzero_for_missing_input(tmp_path: Path) -> None:

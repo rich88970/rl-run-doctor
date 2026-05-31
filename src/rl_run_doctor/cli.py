@@ -6,6 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from rl_run_doctor import __version__
 from rl_run_doctor.analysis import DetectorConfig, run_diagnosis
 from rl_run_doctor.dashboard import run_dashboard
 from rl_run_doctor.exceptions import RLDoctorError
@@ -42,6 +43,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="rl-doctor",
         description="Diagnose reinforcement learning training logs.",
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command")
 
     analyze = subparsers.add_parser("analyze", help="Analyze one training log.")

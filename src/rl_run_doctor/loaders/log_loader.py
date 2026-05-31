@@ -8,7 +8,6 @@ from json import JSONDecodeError
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 from pandas.errors import EmptyDataError
 
@@ -63,8 +62,10 @@ ALIASES: dict[str, str] = {
     "mean_speed": "speed",
     "velocity": "speed",
     "crash": "crash",
+    "crash_rate": "crash",
     "crashed": "crash",
     "collision": "crash",
+    "collision_rate": "crash",
     "collisions": "crash",
     "done_crash": "crash",
     "success": "success",
@@ -173,14 +174,37 @@ def normalize_columns(data: pd.DataFrame) -> tuple[pd.DataFrame, list[str], str,
     for column in NUMERIC_COLUMNS.intersection(normalized.columns):
         normalized[column] = pd.to_numeric(normalized[column], errors="coerce")
 
+    _normalize_rate_column(normalized, "crash")
+    _normalize_rate_column(normalized, "success")
+
     if "timestep" in normalized.columns:
         x_column = "timestep"
+    elif "episode_index" in normalized.columns:
+        x_column = "episode_index"
+        warnings.append("No timestep column found; using existing episode_index as the x-axis.")
+    elif "episode" in normalized.columns:
+        x_column = "episode"
+        warnings.append("No timestep column found; using existing episode as the x-axis.")
     else:
-        normalized["episode_index"] = np.arange(len(normalized), dtype=int)
+        normalized["episode_index"] = range(len(normalized))
         x_column = "episode_index"
         warnings.append("No timestep column found; using episode index as the x-axis.")
 
     return normalized, [str(column) for column in normalized.columns], x_column, warnings
+
+
+def _normalize_rate_column(data: pd.DataFrame, column: str) -> None:
+    if column not in data.columns:
+        return
+    series = pd.to_numeric(data[column], errors="coerce")
+    non_null = series.dropna()
+    if non_null.empty:
+        data[column] = series
+        return
+    if non_null.max() > 1.0:
+        data[column] = series / 100.0
+    else:
+        data[column] = series
 
 
 def _load_csv(path: Path) -> tuple[pd.DataFrame, str]:

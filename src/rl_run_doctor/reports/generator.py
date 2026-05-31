@@ -5,6 +5,8 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 
+import pandas as pd
+
 from rl_run_doctor.analysis import AnalysisResult
 from rl_run_doctor.loaders import LoadedLog
 from rl_run_doctor.plots import PlotArtifact
@@ -91,6 +93,9 @@ def _compare_markdown(
         *_log_summary_markdown("Run A", log_a),
         *_log_summary_markdown("Run B", log_b),
         "",
+        "## Comparison Summary",
+        *_comparison_summary_markdown(log_a, log_b),
+        "",
         "## Generated Plots",
         *_plot_markdown_lines(plots),
         "",
@@ -144,6 +149,7 @@ def _compare_html(
             "<h2>Inputs</h2>",
             _log_summary_html("Run A", log_a),
             _log_summary_html("Run B", log_b),
+            _comparison_summary_html(log_a, log_b),
             _plots_html(plots),
             _thresholds_html(analysis_a),
             "<h2>Diagnosis Summary</h2>",
@@ -192,6 +198,21 @@ def _log_summary_markdown(label: str, log: LoadedLog) -> list[str]:
         f"- Normalized columns: `{', '.join(log.normalized_columns)}`",
         "",
     ]
+
+
+def _comparison_summary_markdown(log_a: LoadedLog, log_b: LoadedLog) -> list[str]:
+    rows = [_reward_summary("Run A", log_a), _reward_summary("Run B", log_b)]
+    lines = [
+        "| Run | File | Final reward | Mean reward | Best reward | Reward std |",
+        "| --- | --- | ---: | ---: | ---: | ---: |",
+    ]
+    for row in rows:
+        lines.append(
+            "| {run} | `{file}` | {final_reward} | {mean_reward} | {best_reward} | {reward_std} |".format(
+                **row
+            )
+        )
+    return lines
 
 
 def _plots_html(plots: list[PlotArtifact]) -> str:
@@ -252,6 +273,64 @@ def _log_summary_html(label: str, log: LoadedLog) -> str:
             "</ul>",
         ]
     )
+
+
+def _comparison_summary_html(log_a: LoadedLog, log_b: LoadedLog) -> str:
+    rows = "".join(
+        "<tr>"
+        f"<td>{escape(row['run'])}</td>"
+        f"<td><code>{escape(row['file'])}</code></td>"
+        f"<td>{escape(row['final_reward'])}</td>"
+        f"<td>{escape(row['mean_reward'])}</td>"
+        f"<td>{escape(row['best_reward'])}</td>"
+        f"<td>{escape(row['reward_std'])}</td>"
+        "</tr>"
+        for row in [_reward_summary("Run A", log_a), _reward_summary("Run B", log_b)]
+    )
+    return (
+        "<h2>Comparison Summary</h2>"
+        "<table>"
+        "<thead><tr><th>Run</th><th>File</th><th>Final reward</th><th>Mean reward</th>"
+        "<th>Best reward</th><th>Reward std</th></tr></thead>"
+        f"<tbody>{rows}</tbody>"
+        "</table>"
+    )
+
+
+def _reward_summary(label: str, log: LoadedLog) -> dict[str, str]:
+    if "reward" not in log.data.columns:
+        return {
+            "run": label,
+            "file": log.path.name,
+            "final_reward": "n/a",
+            "mean_reward": "n/a",
+            "best_reward": "n/a",
+            "reward_std": "n/a",
+        }
+
+    reward = pd.to_numeric(log.data["reward"], errors="coerce").dropna()
+    if reward.empty:
+        return {
+            "run": label,
+            "file": log.path.name,
+            "final_reward": "n/a",
+            "mean_reward": "n/a",
+            "best_reward": "n/a",
+            "reward_std": "n/a",
+        }
+
+    return {
+        "run": label,
+        "file": log.path.name,
+        "final_reward": _format_number(float(reward.iloc[-1])),
+        "mean_reward": _format_number(float(reward.mean())),
+        "best_reward": _format_number(float(reward.max())),
+        "reward_std": _format_number(float(reward.std(ddof=0))),
+    }
+
+
+def _format_number(value: float) -> str:
+    return f"{value:.3f}".rstrip("0").rstrip(".")
 
 
 def _html_document(title: str, body: str) -> str:

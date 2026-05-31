@@ -1,5 +1,7 @@
 # rl-run-doctor
 
+[![CI](https://github.com/rich88970/rl-run-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/rich88970/rl-run-doctor/actions/workflows/ci.yml)
+
 `rl-run-doctor` is a lightweight command-line tool for diagnosing reinforcement learning training logs. It reads CSV, JSON, JSON Lines / NDJSON, and Stable-Baselines3 `monitor.csv` files, detects common training problems, generates plots, compares runs, and exports Markdown and HTML reports.
 
 ## Quick Start
@@ -10,6 +12,7 @@ From a fresh checkout:
 python -m pip install -e ".[dev,dashboard]"
 python -m pytest
 rl-doctor --help
+rl-doctor --version
 rl-doctor analyze examples/sample_train.csv --output out/analyze
 rl-doctor compare examples/sample_train.csv examples/sample_eval.csv --output out/compare
 ```
@@ -100,7 +103,7 @@ For SB3 monitor files, metadata lines starting with `#` are skipped and columns 
 - `l` -> `episode_length`
 - `t` -> `wall_time`
 
-If no timestep column exists, rl-run-doctor uses the episode index as the plot x-axis.
+If no timestep column exists, rl-run-doctor uses an existing `episode_index` or `episode` column as the plot x-axis. If neither exists, it creates an episode index.
 
 ## Detectors
 
@@ -139,18 +142,9 @@ docker build -t rl-run-doctor .
 docker run --rm -v "$PWD:/work" -w /work rl-run-doctor analyze examples/sample_train.csv --output out/analyze
 ```
 
-## Upload to GitHub
+## Contributing
 
-This project is ready to publish as a GitHub repository. A typical first push is:
-
-```bash
-git init
-git add .
-git commit -m "Initial rl-run-doctor release"
-git branch -M main
-git remote add origin https://github.com/YOUR_USER/rl-run-doctor.git
-git push -u origin main
-```
+Issues, bug reports, and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
 ## License
 

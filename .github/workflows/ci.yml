@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -31,5 +31,6 @@ jobs:
       - name: Verify CLI
         run: |
           rl-doctor --help
+          rl-doctor --version
           rl-doctor analyze examples/sample_train.csv --output out/analyze
           rl-doctor compare examples/sample_train.csv examples/sample_eval.csv --output out/compare
