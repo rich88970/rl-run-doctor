@@ -1,0 +1,8 @@
+[
+  {"timestep": 0, "reward": 10, "speed": 2.4, "crash": 0, "success": 0, "steering": 0.02},
+  {"timestep": 1000, "reward": 18, "speed": 2.7, "crash": 0, "success": 0, "steering": 0.05},
+  {"timestep": 2000, "reward": 27, "speed": 3.1, "crash": 0, "success": 0, "steering": -0.03},
+  {"timestep": 3000, "reward": 35, "speed": 3.4, "crash": 0, "success": 1, "steering": 0.04},
+  {"timestep": 4000, "reward": 42, "speed": 3.8, "crash": 0, "success": 1, "steering": -0.02},
+  {"timestep": 5000, "reward": 49, "speed": 4.1, "crash": 0, "success": 1, "steering": 0.03}
+]
